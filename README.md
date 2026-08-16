@@ -125,6 +125,11 @@ This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendo
 
 **0.1.0 beta** - first release: build/install/run/status/uninstall/package/release from the 1.5.0 `.dmg` or `.exe`; glikvm-mod 0.1.6 applied; Linux fixes (hookWindowMessage, instance conflict), mac-bundle About variant, STRIP hotfix; AppImage + tar.gz releases with SHA256SUMS and an in-app updater; mock device + CDP test helpers.
 
-## License
+## Licensing
 
-MIT, see [LICENSE](LICENSE). Not affiliated with GL-iNet; GLKVM and the client are theirs.
+* **This repository** (build tool, patches, injected code, test helpers): MIT, see [LICENSE](LICENSE).
+* **glikvm-mod**: MIT ([emaspa/glikvm-mod](https://github.com/emaspa/glikvm-mod)).
+* **The GLKVM desktop client** whose payload the releases contain: © GL Technologies (HK) Ltd., all rights reserved, no open-source license (the client's source is not published; it is distinct from GL-iNet's GPL-3.0 device firmware [gl-inet/glkvm](https://github.com/gl-inet/glkvm), none of which is included here). Its third-party components are MIT/BSD (ant-design-vue, marked, electron-store, ...). The release builds are provided as an unofficial convenience for Linux users; if GL-iNet asks for them to be taken down they will be, and building locally from your own downloaded package (above) needs nothing from this repo's releases.
+* **Electron** 34 (MIT) and **Chromium** (BSD) - their notices ship in the app dir as `LICENSE` and `LICENSES.chromium.html`.
+
+Not affiliated with, endorsed or supported by GL-iNet.

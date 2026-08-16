@@ -183,7 +183,7 @@ async function release() {
     "",
     "Installed copies check this page on start and every 6 h and offer to update in place (About → Check for updates); downloads are verified against `SHA256SUMS`.",
     "",
-    "Login/settings live in `~/.config/gl-kvm`. Unofficial community project - not affiliated with, endorsed or supported by GL-iNet.",
+    "Login/settings live in `~/.config/gl-kvm`. Unofficial community project - not affiliated with, endorsed or supported by GL-iNet. Licensing: build tool + mod MIT; the GLKVM client inside is © GL Technologies (HK) Ltd., all rights reserved (see README → Licensing); Electron MIT, Chromium BSD.",
     opt("notes", "") ? "\n" + opt("notes", "") : "",
   ].join("\n");
   const notesFile = path.join(DIST, "RELEASE_NOTES.md");
