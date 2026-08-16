@@ -113,13 +113,13 @@ export function linuxPatches(dir, { MOD_VERSION }) {
     },
     {
       file: findBundle(dir, "home", "home"),
-      what: `home: version reads "V${LINUX_VERSION} linux · ui-mod ${MOD_VERSION}" (footer + About title; the copy used by the update check is untouched)`,
+      what: `home: version reads "V${LINUX_VERSION} linux" (footer + About title; ui-mod is only stamped in About; the copy used by the update check is untouched)`,
       apply: (src) => {
-        // footer: "V1.5.0 release1 · ui-mod x" -> "V0.1.0 linux · ui-mod x"
+        // footer: "V1.5.0 release1 · ui-mod x" -> "V0.1.0 beta linux" (the mod is stamped in About instead)
         src = replaceOnce(
           src,
           `toDisplayString(unref(CURRENT_VERSION) + " \\u00b7 ui-mod ${MOD_VERSION}")`,
-          `toDisplayString("V${LINUX_VERSION} linux \\u00b7 ui-mod ${MOD_VERSION}")`,
+          `toDisplayString("V${LINUX_VERSION} linux")`,
           "linux.versionFooter",
         );
         // About title: "GLKVM V1.5.0 release1" -> "GLKVM V0.1.0 linux"
