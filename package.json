@@ -3,7 +3,7 @@
   "version": "0.1.0-beta",
   "private": true,
   "license": "MIT",
-  "description": "Linux version of the GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with glikvm-mod applied",
+  "description": "Unofficial Linux GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with glikvm-mod applied",
   "type": "module",
   "engines": {
     "node": ">=22.6"
