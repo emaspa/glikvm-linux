@@ -209,7 +209,7 @@ export function linuxPatches(dir, { MOD_VERSION }) {
           ].join("\n");
         const block = [
           '          createBaseVNode("div", { class: "mt-[12px] flex-start" }, [',
-          text(`createTextVNode("Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows + ui-mod ${MOD_VERSION}")`),
+          text(`createTextVNode("Unofficial Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows + ui-mod ${MOD_VERSION}")`),
           "          ]),",
           '          createBaseVNode("div", { class: "mt-[6px] flex-start" }, [',
           link(LINUX_REPO_URL),
