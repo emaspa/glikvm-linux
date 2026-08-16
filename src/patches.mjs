@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const LINUX_VERSION = "0.1.0";
+export const LINUX_VERSION = "0.1.0 beta";
 export const LINUX_REPO_URL = "https://github.com/emaspa/glikvm-linux";
 const MOD_REPO_URL = "https://github.com/emaspa/glikvm-mod";
 
@@ -153,7 +153,7 @@ export function linuxPatches(dir, { MOD_VERSION }) {
             "          ]),",
             '          createBaseVNode("div", { class: "mt-[10px] flex-start", style: { flexWrap: "wrap", columnGap: "6px", rowGap: "2px" } }, [',
             '            createVNode(_component_BaseText, { type: "footnote-m", variant: "level2" }, {',
-            `              default: withCtx(() => [createTextVNode("Linux port ${LINUX_VERSION} of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows \u00b7")]),`,
+            `              default: withCtx(() => [createTextVNode("Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows \u00b7")]),`,
             "              _: 1",
             "            }),",
             `            createVNode(_component_BaseText, { class: "text-primary pointer", variant: "level2", onClick: () => window.open("${LINUX_REPO_URL}") }, {`,

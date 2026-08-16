@@ -1,6 +1,6 @@
 {
   "name": "glikvm-linux",
-  "version": "0.1.0",
+  "version": "0.1.0-beta",
   "private": true,
   "license": "MIT",
   "description": "Build a Linux version of the GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages with glikvm-mod applied",
