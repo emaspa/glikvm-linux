@@ -1,0 +1,8 @@
+node_modules/
+build/
+dist/
+vendor/
+*.dmg
+*.exe
+test/*.pem
+test/mock-*.log

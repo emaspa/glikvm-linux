@@ -1,0 +1,27 @@
+{
+  "name": "glikvm-linux",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Build a Linux version of the GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages with glikvm-mod applied",
+  "type": "module",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "bin": {
+    "glikvm-linux": "./glikvm-linux.mjs"
+  },
+  "scripts": {
+    "build": "node glikvm-linux.mjs build",
+    "install-app": "node glikvm-linux.mjs install",
+    "uninstall-app": "node glikvm-linux.mjs uninstall",
+    "start": "node glikvm-linux.mjs run",
+    "status": "node glikvm-linux.mjs status",
+    "package": "node glikvm-linux.mjs package"
+  },
+  "dependencies": {
+    "@electron/asar": "^4.2.1",
+    "@electron/get": "^5.1.0",
+    "extract-zip": "^2.0.1"
+  }
+}
