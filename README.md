@@ -2,7 +2,7 @@
 
 Unofficial Linux GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
 
-This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.0 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.0 release1 today).
+This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.1 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.0 release1 today).
 
 > **Not affiliated with GL-iNet.** This is a community port of their client; GLKVM, the client and its artwork are theirs, and this project is not endorsed or supported by them. The source repository contains only the build tool and patches; the release downloads are convenience builds of their client for Linux.
 
@@ -82,7 +82,7 @@ GLKVM is a thin Electron 34 wrapper (unminified `app.asar`, `nodeIntegration: tr
    * single-instance conflict: on Linux there is no stock client to take over from, so a second start just raises the running one (the mod's PowerShell-based takeover dialog is skipped);
    * a variant of the mod's About-page patch for the macOS-built bundle (its Vue render cache differs from the Windows build in that one spot);
    * hotfix for glikvm-mod ≤ 0.1.5 (`STRIP` undefined in `glOnTabDragEnd`, which made tearing a tab out by drag throw) - fixed upstream in 0.1.6; the hotfix is applied only while its anchor exists, so it is a no-op with a current mod;
-   * version shown as `unofficial v0.1.0 linux (beta)` in the footer and `GLKVM v0.1.0 linux (beta)` as the About title, and the About page replaced by: which GLKVM release it is ported from + ui-mod version, links to this repo and glikvm-mod, and the non-affiliation note - display only, the update-check copy is untouched.
+   * version shown as `unofficial v0.1.1 linux (beta)` in the footer and `GLKVM v0.1.1 linux (beta)` as the About title, and the About page replaced by: which GLKVM release it is ported from + ui-mod version, links to this repo and glikvm-mod, and the non-affiliation note - display only, the update-check copy is untouched.
    * the in-app updater (`src/inject/linux-updater.js`, main process) + `window.utils.glLinuxCheckUpdate()` + the About link.
    Every patched file is syntax-checked.
 3. **Fetch Electron** (`@electron/get`, cached) and assemble a self-contained dir: Electron dist with the binary renamed `glkvm-mod`, `resources/app` = the patched app, and `glkvm-mod.sh` which runs it with `--no-sandbox` (the stock client itself passes `no-sandbox`; the unpacked `chrome-sandbox` cannot be setuid without root anyway).
@@ -120,6 +120,8 @@ grep PRINT test/mock-8443.log
 This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendor/` on first use (or use `--mod` to point at your checkout) and imports its `src/patches.ts` directly. Anything platform-neutral belongs upstream in the mod; only Linux plumbing and build-variant workarounds live here.
 
 ## Changelog
+
+**0.1.1 beta** - wording: "Unofficial" in the About page and the footer (`unofficial v0.1.1 linux (beta)`), About lists both repos and has *Check for updates*; first release published through the in-app updater path.
 
 **0.1.0 beta** - first release: build/install/run/status/uninstall/package/release from the 1.5.0 `.dmg` or `.exe`; glikvm-mod 0.1.6 applied; Linux fixes (hookWindowMessage, instance conflict), mac-bundle About variant, STRIP hotfix; AppImage + tar.gz releases with SHA256SUMS and an in-app updater; mock device + CDP test helpers.
 
