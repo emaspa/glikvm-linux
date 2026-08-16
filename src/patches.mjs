@@ -9,6 +9,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const LINUX_VERSION = "0.1.0";
+export const LINUX_REPO_URL = "https://github.com/emaspa/glikvm-linux";
+const MOD_REPO_URL = "https://github.com/emaspa/glikvm-mod";
 
 export function replaceOnce(src, anchor, replacement, label) {
   const first = src.indexOf(anchor);
@@ -111,20 +113,20 @@ export function linuxPatches(dir, { MOD_VERSION }) {
     },
     {
       file: findBundle(dir, "home", "home"),
-      what: `home: displayed version reads "V1.5.0 r1-linux · ui-mod ${MOD_VERSION}" (footer + About; the copy used by the update check is untouched)`,
+      what: `home: version reads "V${LINUX_VERSION} linux · ui-mod ${MOD_VERSION}" (footer + About title; the copy used by the update check is untouched)`,
       apply: (src) => {
-        // footer: "V1.5.0 release1 · ui-mod x" -> "V1.5.0 r1-linux · ui-mod x"
+        // footer: "V1.5.0 release1 · ui-mod x" -> "V0.1.0 linux · ui-mod x"
         src = replaceOnce(
           src,
           `toDisplayString(unref(CURRENT_VERSION) + " \\u00b7 ui-mod ${MOD_VERSION}")`,
-          `toDisplayString(unref(CURRENT_VERSION).replace(/release(\\d+)/, "r$1-linux") + " \\u00b7 ui-mod ${MOD_VERSION}")`,
+          `toDisplayString("V${LINUX_VERSION} linux \\u00b7 ui-mod ${MOD_VERSION}")`,
           "linux.versionFooter",
         );
-        // About title: "GLKVM V1.5.0 release1" -> "GLKVM V1.5.0 r1-linux"
+        // About title: "GLKVM V1.5.0 release1" -> "GLKVM V0.1.0 linux"
         src = replaceOnce(
           src,
           'createTextVNode("GLKVM " + toDisplayString(unref(VERSION)), 1)',
-          'createTextVNode("GLKVM " + toDisplayString(String(unref(VERSION)).replace(/release(\\d+)/, "r$1-linux")), 1)',
+          `createTextVNode("GLKVM V${LINUX_VERSION} linux", 1)`,
           "linux.versionAbout",
         );
         return src;
@@ -132,9 +134,43 @@ export function linuxPatches(dir, { MOD_VERSION }) {
     },
     {
       file: findBundle(dir, "home", "home"),
-      what: `home: About page also shows "linux ${LINUX_VERSION}"`,
+      what: "home: About page says what this is ported from, links this repo, and states it is not affiliated with GL-iNet",
       apply: (src) =>
-        replaceOnce(src, `ui-mod ${MOD_VERSION} installed`, `ui-mod ${MOD_VERSION} · linux ${LINUX_VERSION} installed`, "linux.aboutStamp"),
+        replaceOnce(
+          src,
+          // right after the mod's "ui-mod x installed · github.com/emaspa/glikvm-mod" row
+          [
+            `              default: withCtx(() => [createTextVNode("${MOD_REPO_URL.replace("https://", "")}")]),`,
+            "              _: 1",
+            "            })",
+            "          ]),",
+            "",
+          ].join("\n"),
+          [
+            `              default: withCtx(() => [createTextVNode("${MOD_REPO_URL.replace("https://", "")}")]),`,
+            "              _: 1",
+            "            })",
+            "          ]),",
+            '          createBaseVNode("div", { class: "mt-[10px] flex-start", style: { flexWrap: "wrap", columnGap: "6px", rowGap: "2px" } }, [',
+            '            createVNode(_component_BaseText, { type: "footnote-m", variant: "level2" }, {',
+            `              default: withCtx(() => [createTextVNode("Linux port ${LINUX_VERSION} of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows \u00b7")]),`,
+            "              _: 1",
+            "            }),",
+            `            createVNode(_component_BaseText, { class: "text-primary pointer", variant: "level2", onClick: () => window.open("${LINUX_REPO_URL}") }, {`,
+            `              default: withCtx(() => [createTextVNode("${LINUX_REPO_URL.replace("https://", "")}")]),`,
+            "              _: 1",
+            "            })",
+            "          ]),",
+            '          createBaseVNode("div", { class: "mt-[4px] flex-start" }, [',
+            '            createVNode(_component_BaseText, { type: "footnote-m", variant: "level3" }, {',
+            '              default: withCtx(() => [createTextVNode("Community project - not affiliated with, endorsed or supported by GL-iNet.")]),',
+            "              _: 1",
+            "            })",
+            "          ]),",
+            "",
+          ].join("\n"),
+          "linux.aboutPort",
+        ),
     },
   ];
 }
