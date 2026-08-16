@@ -7,7 +7,8 @@
 //   node glikvm-linux.mjs install    [--src <pkg>]   build + install to ~/.local/share/glkvm-mod + menu entry "GLKVM (mod)"
 //   node glikvm-linux.mjs run        [-- args]       launch the installed (or built) app
 //   node glikvm-linux.mjs status                     what is built / installed
-//   node glikvm-linux.mjs package                    build + tar.gz (and AppImage if possible) into ./dist
+//   node glikvm-linux.mjs package                    build + tar.gz + AppImage + SHA256SUMS into ./dist
+//   node glikvm-linux.mjs release [--draft]          package + publish as GitHub release <tag> (needs gh); installed copies pick it up
 //   node glikvm-linux.mjs uninstall                  remove the installed copy + menu entry
 //   node glikvm-linux.mjs update-mod                 git pull the vendored glikvm-mod
 //
@@ -25,11 +26,11 @@ import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { log, warn, die, run, which, rmrf, readJson, writeJson, fmtBytes } from "./src/util.mjs";
+import { log, warn, die, run, tryRun, which, rmrf, readJson, writeJson, fmtBytes, sha256 } from "./src/util.mjs";
 import { buildApp, assemble, readMarker, APP_ID, MARKER } from "./src/build.mjs";
 import { ensureMod, defaultModDir } from "./src/mod.mjs";
 import { defaultInstallDir, installDesktop, uninstallDesktop, desktopFile, desktopEntry } from "./src/desktop.mjs";
-import { LINUX_VERSION } from "./src/patches.mjs";
+import { LINUX_VERSION, LINUX_TAG, LINUX_STAGE, LINUX_REPO, LINUX_DISPLAY_VERSION } from "./src/patches.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -117,19 +118,20 @@ function status() {
 async function pkg() {
   const { marker, out } = await build();
   fs.mkdirSync(DIST, { recursive: true });
-  const base = `GLKVM-mod-${marker.appVersion}-uimod${marker.modVersion}-linux-${ARCH}`;
+  const base = `glkvm-mod-${LINUX_TAG}-linux-${ARCH}`;
+  const produced = [];
   // 1) tarball of the portable dir
   const tar = path.join(DIST, `${base}.tar.gz`);
   fs.rmSync(tar, { force: true });
   log(`packing ${tar}`);
   run("tar", ["-C", path.dirname(out), "-czf", tar, path.basename(out)]);
   log(`tarball: ${tar} (${fmtBytes(fs.statSync(tar).size)})`);
+  produced.push(tar);
   // 2) AppImage (optional): needs appimagetool; we fetch it into the cache if missing
-  if (flag("no-appimage")) return;
-  const tool = await getAppImageTool();
+  const tool = flag("no-appimage") ? null : await getAppImageTool();
   if (!tool) {
-    warn("appimagetool unavailable (offline / no curl?) - skipped AppImage; the tarball is complete on its own");
-    return;
+    if (!flag("no-appimage")) warn("appimagetool unavailable (offline / no curl?) - skipped AppImage; the tarball is complete on its own");
+    return finishPackage(marker, produced);
   }
   const appDir = path.join(BUILD, `${APP_ID}.AppDir`);
   rmrf(appDir);
@@ -152,9 +154,52 @@ async function pkg() {
   try {
     run(tool, ["--appimage-extract-and-run", appDir, appimage], { env: { ...process.env, ARCH: ARCH === "arm64" ? "aarch64" : "x86_64", NO_STRIP: "1" } });
     log(`AppImage: ${appimage} (${fmtBytes(fs.statSync(appimage).size)})`);
+    produced.push(appimage);
   } catch (e) {
     warn(`AppImage build failed: ${e.message.split("\n").slice(-3).join(" ")}`);
   }
+  return finishPackage(marker, produced);
+}
+
+// SHA256SUMS next to the assets (the in-app updater verifies downloads against it)
+function finishPackage(marker, produced) {
+  const sums = path.join(DIST, "SHA256SUMS");
+  fs.writeFileSync(sums, produced.map((f) => `${sha256(f)}  ${path.basename(f)}\n`).join(""));
+  produced.push(sums);
+  log(`checksums: ${sums}`);
+  return { marker, produced };
+}
+
+// publish ./dist as the GitHub release for LINUX_TAG; the in-app updater looks at exactly this
+async function release() {
+  if (!which("gh")) die("gh (GitHub CLI) is required to publish releases");
+  const { marker, produced } = await pkg();
+  const title = `GLKVM ${LINUX_DISPLAY_VERSION}`;
+  const notes = [
+    `**GLKVM ${marker.appVersion}** desktop client (Linux port ${LINUX_TAG}) + **ui-mod ${marker.modVersion}**, on Electron ${marker.electronVersion}, ${ARCH}.`,
+    "",
+    "**AppImage**: `chmod +x glkvm-mod-*.AppImage && ./glkvm-mod-*.AppImage` (needs FUSE 2, e.g. `libfuse2`; or run with `--appimage-extract-and-run`).",
+    "**tar.gz**: extract anywhere and run `glkvm-mod/glkvm-mod.sh`.",
+    "",
+    "Installed copies check this page on start and every 6 h and offer to update in place (About → Check for updates); downloads are verified against `SHA256SUMS`.",
+    "",
+    "Login/settings live in `~/.config/gl-kvm`. Not affiliated with GL-iNet.",
+    opt("notes", "") ? "\n" + opt("notes", "") : "",
+  ].join("\n");
+  const notesFile = path.join(DIST, "RELEASE_NOTES.md");
+  fs.writeFileSync(notesFile, notes);
+  const exists = tryRun("gh", ["release", "view", LINUX_TAG, "-R", LINUX_REPO]) !== null;
+  if (exists) {
+    log(`release ${LINUX_TAG} exists - uploading assets (clobber)`);
+    run("gh", ["release", "upload", LINUX_TAG, ...produced, "--clobber", "-R", LINUX_REPO], { stdio: ["ignore", "inherit", "inherit"] });
+  } else {
+    log(`creating release ${LINUX_TAG}`);
+    const args = ["release", "create", LINUX_TAG, ...produced, "-R", LINUX_REPO, "--title", title, "--notes-file", notesFile];
+    if (LINUX_STAGE) args.push("--prerelease");
+    if (flag("draft")) args.push("--draft");
+    run("gh", args, { stdio: ["ignore", "inherit", "inherit"] });
+  }
+  log(`published: https://github.com/${LINUX_REPO}/releases/tag/${LINUX_TAG}`);
 }
 
 async function getAppImageTool() {
@@ -180,7 +225,7 @@ async function getAppImageTool() {
 
 function help() {
   const src = fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n");
-  console.log(src.slice(1, 22).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
+  console.log(src.slice(1, 23).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
 }
 
 try {
@@ -202,6 +247,9 @@ try {
       break;
     case "package":
       await pkg();
+      break;
+    case "release":
+      await release();
       break;
     case "update-mod":
       ensureMod(MOD_DIR, { update: true });

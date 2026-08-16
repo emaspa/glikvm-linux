@@ -2,9 +2,9 @@
 
 Build a **Linux version of the GLKVM desktop client** (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
 
-GL-iNet only ships the client for Windows and macOS. This tool takes the official `.dmg` (or `.exe`) you downloaded, reuses its platform-independent app payload on the Linux Electron runtime, applies the mod, and installs the result as **GLKVM (mod)**, version **v0.1.0 linux (beta)** (About shows the ui-mod version and which GLKVM release it is ported from - 1.5.0 release1 today).
+GL-iNet only ships the client for Windows and macOS. This project ports it: the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied - shipped as an **AppImage / tarball** you can just run (with in-app updates), or built locally from your own downloaded package. Shows up as **v0.1.0 linux (beta)** (About shows the ui-mod version and which GLKVM release it is ported from - 1.5.0 release1 today).
 
-> **Not affiliated with GL-iNet.** This is a community port of their client; GLKVM, the client and its artwork are theirs, nothing of theirs is redistributed here, and it is not endorsed or supported by them.
+> **Not affiliated with GL-iNet.** This is a community port of their client; GLKVM, the client and its artwork are theirs, and this project is not endorsed or supported by them. The source repository contains only the build tool and patches; the release downloads are convenience builds of their client for Linux.
 
 It has everything the mod adds on Windows:
 
@@ -18,14 +18,30 @@ It has everything the mod adds on Windows:
 | **Start screen** | open on Remote Access or Local Access; Back from Settings returns to the last access page |
 | Window titles = device name, geometry inheritance, settings UI under *Settings → General → Sessions (ui-mod)*, mod/port stamps in About | |
 
-## Requirements
+## Just run it
+
+Grab the latest release from **[Releases](https://github.com/emaspa/glikvm-linux/releases)**:
+
+* `glkvm-mod-<tag>-linux-x64.AppImage` - `chmod +x`, run. Needs FUSE 2 (`libfuse2`/`fuse2` package on most distros; otherwise `./glkvm-mod-*.AppImage --appimage-extract-and-run`).
+* `glkvm-mod-<tag>-linux-x64.tar.gz` - extract anywhere, run `glkvm-mod/glkvm-mod.sh` (add your own menu entry, or use the build tool's `install` below).
+* `SHA256SUMS` - checksums of both.
+
+Login/device list/settings go to `~/.config/gl-kvm` (same as the official client would use). No root needed. The release assets contain GL-iNet's client code (that is what a port is); GLKVM and the client remain theirs - see the note above.
+
+### Updates
+
+The app checks this repo's releases 8 s after start and every 6 h (About → **Check for updates** does it on demand). When a newer tag exists it asks (*Update / Later / Skip this version*), downloads the asset for its own install kind, verifies it against `SHA256SUMS`, swaps it in place - the AppImage file itself, or the whole directory for tar.gz / `install` copies - keeps the previous version as `*.old` until the next start, and offers to restart. Set `GLKVM_LINUX_NO_UPDATE_CHECK=1` to disable the automatic check.
+
+## Build it yourself
+
+### Requirements
 
 * Linux x64 (arm64 with `--arch arm64`, untested), glibc-based distro able to run Electron 34 (Ubuntu 22.04+ / Fedora / Arch / ...).
 * [Node.js](https://nodejs.org) **24** (≥ 23.6; it loads glikvm-mod's TypeScript patch definitions with Node's built-in type stripping - no bun, no tsc), `git`, and `7z` (`p7zip-full` / `7zip` package) to open the `.dmg`/`.exe`.
-* **The official GLKVM package** for macOS (`gl-kvm-<version>.dmg`) or Windows (`GLKVM-Setup-<version>.exe`) from the [GL-iNet app page](https://www.gl-inet.com/en-de/pages/app-rm), placed in this directory (or given with `--src`). Tested with **1.5.0 release1** (Electron 34.5.8). Nothing from GL-iNet is redistributed here; the tool reads the package you downloaded.
+* **The official GLKVM package** for macOS (`gl-kvm-<version>.dmg`) or Windows (`GLKVM-Setup-<version>.exe`) from the [GL-iNet app page](https://www.gl-inet.com/en-de/pages/app-rm), placed in this directory (or given with `--src`). Tested with **1.5.0 release1** (Electron 34.5.8).
 * No root: everything goes to `~/.local/share/glkvm-mod` and your app menu.
 
-## Install
+### Install from source
 
 ```sh
 git clone https://github.com/emaspa/glikvm-linux.git
@@ -38,11 +54,11 @@ node glikvm-linux.mjs status
 node glikvm-linux.mjs uninstall
 ```
 
-Other commands: `build` (only produce the portable dir `build/glkvm-mod`), `package` (build + `dist/*.tar.gz` and, if appimagetool can be fetched, `dist/*.AppImage`), `update-mod` (`git pull` the vendored glikvm-mod, then re-run `install`).
+Other commands: `build` (only produce the portable dir `build/glkvm-mod`), `package` (build + `dist/*.tar.gz` + `dist/*.AppImage` + `SHA256SUMS`), `release` (package + publish as the GitHub release `v<version>` with `gh`; installed copies pick it up through the in-app updater; `--draft`, `--notes "<extra text>"`), `update-mod` (`git pull` the vendored glikvm-mod, then re-run `install`).
 
 Options: `--src <pkg>` (`.dmg`, `.exe`, an install dir / mounted `.app`, or an `app.asar`), `--dest <dir>`, `--mod <dir>` (use your own glikvm-mod checkout instead of `vendor/glikvm-mod`), `--electron <ver>`, `--arch x64|arm64`, `--no-mod` (stock client only, still with the Linux crash fix), `--cache <dir>` (default `~/.cache/glikvm-linux`; Electron downloads honour `ELECTRON_MIRROR`).
 
-**After a new GLKVM release**: download the new package, run `install` again. Every patch (the mod's and this repo's) is anchored on unique snippets of the stock code and aborts loudly if an anchor moved, so a client update can't produce a silently half-patched app. **After updating glikvm-mod** (`update-mod`), re-run `install` too.
+**After a new GLKVM release**: download the new package, run `install` again. Every patch (the mod's and this repo's) is anchored on unique snippets of the stock code and aborts loudly if an anchor moved, so a client update can't produce a silently half-patched app. **After updating glikvm-mod** (`update-mod`), re-run `install` too. To ship it to users: bump `LINUX_VERSION`/`LINUX_STAGE` in `src/patches.mjs`, commit, `node glikvm-linux.mjs release`.
 
 ## Where things live
 
@@ -67,6 +83,7 @@ GLKVM is a thin Electron 34 wrapper (unminified `app.asar`, `nodeIntegration: tr
    * a variant of the mod's About-page patch for the macOS-built bundle (its Vue render cache differs from the Windows build in that one spot);
    * hotfix for glikvm-mod ≤ 0.1.5 (`STRIP` undefined in `glOnTabDragEnd`, which made tearing a tab out by drag throw) - fixed upstream in 0.1.6; the hotfix is applied only while its anchor exists, so it is a no-op with a current mod;
    * version shown as `v0.1.0 linux (beta)` (footer + About title), and the About page replaced by: which GLKVM release it is ported from + ui-mod version, links to this repo and glikvm-mod, and the non-affiliation note - display only, the update-check copy is untouched.
+   * the in-app updater (`src/inject/linux-updater.js`, main process) + `window.utils.glLinuxCheckUpdate()` + the About link.
    Every patched file is syntax-checked.
 3. **Fetch Electron** (`@electron/get`, cached) and assemble a self-contained dir: Electron dist with the binary renamed `glkvm-mod`, `resources/app` = the patched app, and `glkvm-mod.sh` which runs it with `--no-sandbox` (the stock client itself passes `no-sandbox`; the unpacked `chrome-sandbox` cannot be setuid without root anyway).
 4. **Install**: copy to `--dest`, write the `.desktop` file (`StartupWMClass=gl-kvm`, `MimeType=x-scheme-handler/glkvm` for the OAuth callback), icon, `~/.local/bin` symlink, `xdg-mime default`.
@@ -78,7 +95,7 @@ Nothing else in the client is touched: login, cloud relay, local access, webterm
 * **Wayland**: Electron 34 runs through XWayland by default, which is what the mod's window-drag/merge logic (cursor position, window bounds) needs. `ELECTRON_OZONE_PLATFORM_HINT=auto glkvm-mod` runs native Wayland; window dragging by tab/merging windows will not track the cursor there.
 * **Tray**: the client hides to the tray on close by default (*Settings → General → Operation when closing the window*). GNOME needs an AppIndicator extension to show tray icons; without one, launch "GLKVM (mod)" again to bring the hidden window back (single-instance hand-off), or set the close action to *Quit*.
 * **System keys**: the Windows build ships a helper that swallows `Win`/`Alt+Tab` while a session is focused; there is no Linux equivalent, so those still go to your desktop (same as macOS).
-* **Auto-update** is inert on Linux (the update feed has no Linux entry), which is what you want: update by re-running `install` with a new package.
+* **GL-iNet's own auto-update** is inert on Linux (their feed has no Linux entry); updates come from this repo's releases via the in-app updater described above.
 * **Notifications** (paste failures etc.) use libnotify via Electron; `Ctrl+Alt+V` is intercepted before the device iframe sees it, as on Windows.
 * Fonts: the bundle ships Inter/NotoSansSC, so it looks the same as elsewhere; on HiDPI the usual Electron `--force-device-scale-factor` works if your session doesn't set it.
 * Tested on Ubuntu (GNOME, Wayland session/XWayland) with the mock device below and against the client 1.5.0 `.dmg`; real RM10 units are reachable exactly like on Windows since the session is the device's own web UI in an iframe.
@@ -104,7 +121,7 @@ This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendo
 
 ## Changelog
 
-**0.1.0 beta** - first release: build/install/run/status/uninstall/package from the 1.5.0 `.dmg` or `.exe`; glikvm-mod 0.1.6 applied; Linux fixes (hookWindowMessage, instance conflict), mac-bundle About variant, STRIP hotfix; tar.gz + AppImage packaging; mock device + CDP test helpers.
+**0.1.0 beta** - first release: build/install/run/status/uninstall/package/release from the 1.5.0 `.dmg` or `.exe`; glikvm-mod 0.1.6 applied; Linux fixes (hookWindowMessage, instance conflict), mac-bundle About variant, STRIP hotfix; AppImage + tar.gz releases with SHA256SUMS and an in-app updater; mock device + CDP test helpers.
 
 ## License
 

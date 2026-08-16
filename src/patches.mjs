@@ -7,9 +7,12 @@
 // anchor is missing or ambiguous, so a client update never yields a half-patched app.
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export const LINUX_VERSION = "0.1.0";
 export const LINUX_STAGE = "beta"; // shown as "v0.1.0 linux (beta)"
+export const LINUX_TAG = `v${LINUX_VERSION}${LINUX_STAGE ? `-${LINUX_STAGE}` : ""}`; // git tag / GitHub release name, what the in-app updater compares
+export const LINUX_REPO = "emaspa/glikvm-linux";
 export const LINUX_DISPLAY_VERSION = `v${LINUX_VERSION} linux${LINUX_STAGE ? ` (${LINUX_STAGE})` : ""}`;
 export const LINUX_REPO_URL = "https://github.com/emaspa/glikvm-linux";
 const MOD_REPO_URL = "https://github.com/emaspa/glikvm-mod";
@@ -26,6 +29,9 @@ export function replaceRegexOnce(src, re, replacement, label) {
   if (!matches || matches.length !== 1) throw new Error(`[${label}] regex matched ${matches?.length ?? 0} times, expected 1`);
   return src.replace(re, replacement);
 }
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const inject = (name) => fs.readFileSync(path.join(here, "inject", name), "utf8");
 
 function findBundle(dir, view, prefix) {
   const html = fs.readFileSync(path.join(dir, `out/renderer/view/${view}/index.html`), "utf8");
@@ -114,6 +120,42 @@ export function linuxPatches(dir, { MOD_VERSION }) {
         ),
     },
     {
+      file: "out/main/index.js",
+      what: `main: in-app updater - checks GitHub Releases of ${LINUX_REPO} (installed: ${LINUX_TAG}), verifies SHA256SUMS, swaps AppImage / install dir, relaunches`,
+      apply: (src) => {
+        src = replaceOnce(
+          src,
+          "function closeRemoteWebtermByDeviceId(deviceId) {\n",
+          inject("linux-updater.js").replaceAll("__GL_LINUX_TAG__", LINUX_TAG).replaceAll("__GL_LINUX_REPO__", LINUX_REPO) + "function closeRemoteWebtermByDeviceId(deviceId) {\n",
+          "linux.updater.inject",
+        );
+        src = replaceOnce(
+          src,
+          '    initTray();\n    utils$2.electronApp.setAppUserModelId("com.gl.inet.kvm");\n',
+          '    initTray();\n    glLinuxUpdaterInit();\n    utils$2.electronApp.setAppUserModelId("com.gl.inet.kvm");\n',
+          "linux.updater.init",
+        );
+        src = replaceOnce(
+          src,
+          "    openDevTool: (event) => event.sender.openDevTools(),\n",
+          "    openDevTool: (event) => event.sender.openDevTools(),\n    glLinuxCheckUpdate: () => glLinuxCheckForUpdates(true),\n",
+          "linux.updater.ipc",
+        );
+        return src;
+      },
+    },
+    {
+      file: "out/preload/index.js",
+      what: "preload: window.utils.glLinuxCheckUpdate() for the About page",
+      apply: (src) =>
+        replaceOnce(
+          src,
+          '  openDevTool: () => electron.ipcRenderer.send("openDevTool"),\n',
+          '  openDevTool: () => electron.ipcRenderer.send("openDevTool"),\n  glLinuxCheckUpdate: () => electron.ipcRenderer.send("glLinuxCheckUpdate"),\n',
+          "linux.updater.preload",
+        ),
+    },
+    {
       file: findBundle(dir, "home", "home"),
       what: `home: version reads "${LINUX_DISPLAY_VERSION}" (footer + About title; ui-mod is only stamped in About; the copy used by the update check is untouched)`,
       apply: (src) => {
@@ -174,6 +216,12 @@ export function linuxPatches(dir, { MOD_VERSION }) {
           "          ]),",
           '          createBaseVNode("div", { class: "mt-[2px] flex-start" }, [',
           link(MOD_REPO_URL),
+          "          ]),",
+          '          createBaseVNode("div", { class: "mt-[6px] flex-start" }, [',
+          '            createVNode(_component_BaseText, { class: "text-primary pointer", variant: "level2", onClick: () => window.utils.glLinuxCheckUpdate() }, {',
+          '              default: withCtx(() => [createTextVNode("Check for updates")]),',
+          "              _: 1",
+          "            })",
           "          ]),",
           '          createBaseVNode("div", { class: "mt-[8px] flex-start" }, [',
           text('createTextVNode("Community project - not affiliated with, endorsed or supported by GL-iNet.")', "level3"),
