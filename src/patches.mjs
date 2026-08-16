@@ -136,43 +136,52 @@ export function linuxPatches(dir, { MOD_VERSION }) {
     },
     {
       file: findBundle(dir, "home", "home"),
-      what: "home: About page says what this is ported from, links this repo, and states it is not affiliated with GL-iNet",
-      apply: (src) =>
-        replaceOnce(
-          src,
-          // right after the mod's "ui-mod x installed · github.com/emaspa/glikvm-mod" row
+      what: "home: About page - replace the mod's 'ui-mod installed' row with: what this is ported from (+ ui-mod), both repo links, not affiliated with GL-iNet",
+      apply: (src) => {
+        // the row the mod (or its mac-bundle variant above) inserted after the copyright line
+        const startAnchor = '          createBaseVNode("div", { class: "h-[20px] mt-[12px] flex-start" }, [\n';
+        const endAnchor = [
+          `              default: withCtx(() => [createTextVNode("${MOD_REPO_URL.replace("https://", "")}")]),`,
+          "              _: 1",
+          "            })",
+          "          ]),",
+          "",
+        ].join("\n");
+        const a = src.indexOf(startAnchor);
+        if (a === -1 || src.indexOf(startAnchor, a + 1) !== -1) throw new Error("[linux.aboutPort] start anchor missing/ambiguous");
+        const b = src.indexOf(endAnchor, a);
+        if (b === -1 || src.indexOf(endAnchor, b + 1) !== -1) throw new Error("[linux.aboutPort] end anchor missing/ambiguous");
+        const text = (t, variant = "level2") =>
           [
-            `              default: withCtx(() => [createTextVNode("${MOD_REPO_URL.replace("https://", "")}")]),`,
+            `            createVNode(_component_BaseText, { type: "footnote-m", variant: "${variant}" }, {`,
+            `              default: withCtx(() => [${t}]),`,
             "              _: 1",
             "            })",
-            "          ]),",
-            "",
-          ].join("\n"),
+          ].join("\n");
+        const link = (url) =>
           [
-            `              default: withCtx(() => [createTextVNode("${MOD_REPO_URL.replace("https://", "")}")]),`,
+            `            createVNode(_component_BaseText, { class: "text-primary pointer", variant: "level2", onClick: () => window.open("${url}") }, {`,
+            `              default: withCtx(() => [createTextVNode("${url.replace("https://", "")}")]),`,
             "              _: 1",
             "            })",
-            "          ]),",
-            '          createBaseVNode("div", { class: "mt-[10px] flex-start", style: { flexWrap: "wrap", columnGap: "6px", rowGap: "2px" } }, [',
-            '            createVNode(_component_BaseText, { type: "footnote-m", variant: "level2" }, {',
-            `              default: withCtx(() => [createTextVNode("Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows + ui-mod ${MOD_VERSION} \u00b7")]),`,
-            "              _: 1",
-            "            }),",
-            `            createVNode(_component_BaseText, { class: "text-primary pointer", variant: "level2", onClick: () => window.open("${LINUX_REPO_URL}") }, {`,
-            `              default: withCtx(() => [createTextVNode("${LINUX_REPO_URL.replace("https://", "")}")]),`,
-            "              _: 1",
-            "            })",
-            "          ]),",
-            '          createBaseVNode("div", { class: "mt-[4px] flex-start" }, [',
-            '            createVNode(_component_BaseText, { type: "footnote-m", variant: "level3" }, {',
-            '              default: withCtx(() => [createTextVNode("Community project - not affiliated with, endorsed or supported by GL-iNet.")]),',
-            "              _: 1",
-            "            })",
-            "          ]),",
-            "",
-          ].join("\n"),
-          "linux.aboutPort",
-        ),
+          ].join("\n");
+        const block = [
+          '          createBaseVNode("div", { class: "mt-[12px] flex-start" }, [',
+          text(`createTextVNode("Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows + ui-mod ${MOD_VERSION}")`),
+          "          ]),",
+          '          createBaseVNode("div", { class: "mt-[6px] flex-start" }, [',
+          link(LINUX_REPO_URL),
+          "          ]),",
+          '          createBaseVNode("div", { class: "mt-[2px] flex-start" }, [',
+          link(MOD_REPO_URL),
+          "          ]),",
+          '          createBaseVNode("div", { class: "mt-[8px] flex-start" }, [',
+          text('createTextVNode("Community project - not affiliated with, endorsed or supported by GL-iNet.")', "level3"),
+          "          ]),",
+          "",
+        ].join("\n");
+        return src.slice(0, a) + block + src.slice(b + endAnchor.length);
+      },
     },
   ];
 }
