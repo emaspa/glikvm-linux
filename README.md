@@ -2,7 +2,7 @@
 
 Build a **Linux version of the GLKVM desktop client** (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
 
-GL-iNet only ships the client for Windows and macOS. This tool takes the official `.dmg` (or `.exe`) you downloaded, reuses its platform-independent app payload on the Linux Electron runtime, applies the mod, and installs the result as **GLKVM (mod)**, version **V0.1.0 linux (beta)** (About shows the ui-mod version and which GLKVM release it is ported from - 1.5.0 release1 today).
+GL-iNet only ships the client for Windows and macOS. This tool takes the official `.dmg` (or `.exe`) you downloaded, reuses its platform-independent app payload on the Linux Electron runtime, applies the mod, and installs the result as **GLKVM (mod)**, version **v0.1.0 linux (beta)** (About shows the ui-mod version and which GLKVM release it is ported from - 1.5.0 release1 today).
 
 > **Not affiliated with GL-iNet.** This is a community port of their client; GLKVM, the client and its artwork are theirs, nothing of theirs is redistributed here, and it is not endorsed or supported by them.
 
@@ -66,7 +66,7 @@ GLKVM is a thin Electron 34 wrapper (unminified `app.asar`, `nodeIntegration: tr
    * single-instance conflict: on Linux there is no stock client to take over from, so a second start just raises the running one (the mod's PowerShell-based takeover dialog is skipped);
    * a variant of the mod's About-page patch for the macOS-built bundle (its Vue render cache differs from the Windows build in that one spot);
    * hotfix for glikvm-mod ≤ 0.1.5 (`STRIP` undefined in `glOnTabDragEnd`, which made tearing a tab out by drag throw) - fixed upstream in 0.1.6; the hotfix is applied only while its anchor exists, so it is a no-op with a current mod;
-   * version shown as `V0.1.0 linux (beta)` (footer + About title; the mod's own About row keeps `ui-mod <ver> installed`), and an About paragraph saying which GLKVM release it is ported from, linking this repo and stating the non-affiliation - display only, the update-check copy is untouched.
+   * version shown as `v0.1.0 linux (beta)` (footer + About title; the mod's own About row keeps `ui-mod <ver> installed`), and an About paragraph saying which GLKVM release it is ported from, linking this repo and stating the non-affiliation - display only, the update-check copy is untouched.
    Every patched file is syntax-checked.
 3. **Fetch Electron** (`@electron/get`, cached) and assemble a self-contained dir: Electron dist with the binary renamed `glkvm-mod`, `resources/app` = the patched app, and `glkvm-mod.sh` which runs it with `--no-sandbox` (the stock client itself passes `no-sandbox`; the unpacked `chrome-sandbox` cannot be setuid without root anyway).
 4. **Install**: copy to `--dest`, write the `.desktop` file (`StartupWMClass=gl-kvm`, `MimeType=x-scheme-handler/glkvm` for the OAuth callback), icon, `~/.local/bin` symlink, `xdg-mime default`.

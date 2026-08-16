@@ -9,8 +9,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const LINUX_VERSION = "0.1.0";
-export const LINUX_STAGE = "beta"; // shown as "V0.1.0 linux (beta)"
-export const LINUX_DISPLAY_VERSION = `V${LINUX_VERSION} linux${LINUX_STAGE ? ` (${LINUX_STAGE})` : ""}`;
+export const LINUX_STAGE = "beta"; // shown as "v0.1.0 linux (beta)"
+export const LINUX_DISPLAY_VERSION = `v${LINUX_VERSION} linux${LINUX_STAGE ? ` (${LINUX_STAGE})` : ""}`;
 export const LINUX_REPO_URL = "https://github.com/emaspa/glikvm-linux";
 const MOD_REPO_URL = "https://github.com/emaspa/glikvm-mod";
 
@@ -117,14 +117,14 @@ export function linuxPatches(dir, { MOD_VERSION }) {
       file: findBundle(dir, "home", "home"),
       what: `home: version reads "${LINUX_DISPLAY_VERSION}" (footer + About title; ui-mod is only stamped in About; the copy used by the update check is untouched)`,
       apply: (src) => {
-        // footer: "V1.5.0 release1 · ui-mod x" -> "V0.1.0 linux (beta)" (the mod is stamped in About instead)
+        // footer: "V1.5.0 release1 · ui-mod x" -> "v0.1.0 linux (beta)" (the mod is stamped in About instead)
         src = replaceOnce(
           src,
           `toDisplayString(unref(CURRENT_VERSION) + " \\u00b7 ui-mod ${MOD_VERSION}")`,
           `toDisplayString(${JSON.stringify(LINUX_DISPLAY_VERSION)})`,
           "linux.versionFooter",
         );
-        // About title: "GLKVM V1.5.0 release1" -> "GLKVM V0.1.0 linux (beta)"
+        // About title: "GLKVM V1.5.0 release1" -> "GLKVM v0.1.0 linux (beta)"
         src = replaceOnce(
           src,
           'createTextVNode("GLKVM " + toDisplayString(unref(VERSION)), 1)',
