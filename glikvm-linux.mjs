@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// glikvm-linux - build a Linux version of the GLKVM desktop client (GL-iNet Comet / RM1 / RM10)
+// glikvm-linux - Linux version of the GLKVM desktop client (GL-iNet Comet / RM1 / RM10)
 // based on the macOS and Windows packages, with glikvm-mod applied
 // (sessions in separate windows, tab drag/tear-out, paste local clipboard, 1:1 resize, ...).
 //

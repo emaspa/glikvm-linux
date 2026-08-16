@@ -1,6 +1,6 @@
 # glikvm-linux
 
-Build a **Linux version of the GLKVM desktop client** (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
+Linux version of the GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
 
 This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.0 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.0 release1 today).
 
