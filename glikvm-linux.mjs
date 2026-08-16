@@ -8,7 +8,7 @@
 //   node glikvm-linux.mjs run        [-- args]       launch the installed (or built) app
 //   node glikvm-linux.mjs status                     what is built / installed
 //   node glikvm-linux.mjs package                    build + tar.gz + AppImage + SHA256SUMS into ./dist
-//   node glikvm-linux.mjs release [--draft]          package + publish as GitHub release <tag> (needs gh); installed copies pick it up
+//   node glikvm-linux.mjs release [--draft|--prerelease] package + publish as GitHub release <tag> (needs gh); installed copies pick it up
 //   node glikvm-linux.mjs uninstall                  remove the installed copy + menu entry
 //   node glikvm-linux.mjs update-mod                 git pull the vendored glikvm-mod
 //
@@ -195,7 +195,8 @@ async function release() {
   } else {
     log(`creating release ${LINUX_TAG}`);
     const args = ["release", "create", LINUX_TAG, ...produced, "-R", LINUX_REPO, "--title", title, "--notes-file", notesFile];
-    if (LINUX_STAGE) args.push("--prerelease");
+    if (flag("prerelease")) args.push("--prerelease"); // betas are normal releases here (they are what users run); opt in explicitly
+    else args.push("--latest");
     if (flag("draft")) args.push("--draft");
     run("gh", args, { stdio: ["ignore", "inherit", "inherit"] });
   }

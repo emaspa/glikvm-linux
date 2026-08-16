@@ -54,7 +54,7 @@ node glikvm-linux.mjs status
 node glikvm-linux.mjs uninstall
 ```
 
-Other commands: `build` (only produce the portable dir `build/glkvm-mod`), `package` (build + `dist/*.tar.gz` + `dist/*.AppImage` + `SHA256SUMS`), `release` (package + publish as the GitHub release `v<version>` with `gh`; installed copies pick it up through the in-app updater; `--draft`, `--notes "<extra text>"`), `update-mod` (`git pull` the vendored glikvm-mod, then re-run `install`).
+Other commands: `build` (only produce the portable dir `build/glkvm-mod`), `package` (build + `dist/*.tar.gz` + `dist/*.AppImage` + `SHA256SUMS`), `release` (package + publish as the GitHub release `v<version>` with `gh`, marked latest; installed copies pick it up through the in-app updater; `--draft`, `--prerelease`, `--notes "<extra text>"`), `update-mod` (`git pull` the vendored glikvm-mod, then re-run `install`).
 
 Options: `--src <pkg>` (`.dmg`, `.exe`, an install dir / mounted `.app`, or an `app.asar`), `--dest <dir>`, `--mod <dir>` (use your own glikvm-mod checkout instead of `vendor/glikvm-mod`), `--electron <ver>`, `--arch x64|arm64`, `--no-mod` (stock client only, still with the Linux crash fix), `--cache <dir>` (default `~/.cache/glikvm-linux`; Electron downloads honour `ELECTRON_MIRROR`).
 
