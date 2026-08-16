@@ -12,7 +12,7 @@ Build a **Linux version of the GLKVM desktop client** (GL-iNet Comet / RM1 / RM1
 | **Start screen** | open on Remote Access or Local Access; Back from Settings returns to the last access page |
 | Window titles = device name, geometry inheritance, settings UI under *Settings → General → Sessions (ui-mod)*, mod/port stamps in About | |
 
-The client shows up as `V1.5.0 r1-linux · ui-mod 0.1.5` in the footer, `GLKVM V1.5.0 r1-linux` and *ui-mod 0.1.5 · linux 0.1.0 installed* in About.
+The client shows up as `V1.5.0 r1-linux · ui-mod 0.1.6` in the footer, `GLKVM V1.5.0 r1-linux` and *ui-mod 0.1.6 · linux 0.1.0 installed* in About.
 
 ## Requirements
 
@@ -61,7 +61,7 @@ GLKVM is a thin Electron 34 wrapper (unminified `app.asar`, `nodeIntegration: tr
    * guard `BrowserWindow.hookWindowMessage(278, ...)`, a Windows-only API the stock code calls whenever it is not on macOS - on Linux every window creation would throw;
    * single-instance conflict: on Linux there is no stock client to take over from, so a second start just raises the running one (the mod's PowerShell-based takeover dialog is skipped);
    * a variant of the mod's About-page patch for the macOS-built bundle (its Vue render cache differs from the Windows build in that one spot);
-   * hotfix for glikvm-mod 0.1.5 (`STRIP` undefined in `glOnTabDragEnd`, which made tearing a tab out by drag throw) - applied only while the anchor exists, i.e. until it is fixed upstream;
+   * hotfix for glikvm-mod ≤ 0.1.5 (`STRIP` undefined in `glOnTabDragEnd`, which made tearing a tab out by drag throw) - fixed upstream in 0.1.6; the hotfix is applied only while its anchor exists, so it is a no-op with a current mod;
    * displayed version `V1.5.0 r1-linux · ui-mod <ver>` (footer + About) and a `linux <ver>` stamp in About - display only, the update-check copy is untouched.
    Every patched file is syntax-checked.
 3. **Fetch Electron** (`@electron/get`, cached) and assemble a self-contained dir: Electron dist with the binary renamed `glkvm-mod`, `resources/app` = the patched app, and `glkvm-mod.sh` which runs it with `--no-sandbox` (the stock client itself passes `no-sandbox`; the unpacked `chrome-sandbox` cannot be setuid without root anyway).
@@ -100,7 +100,7 @@ This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendo
 
 ## Changelog
 
-**0.1.0** - first release: build/install/run/status/uninstall/package from the 1.5.0 `.dmg` or `.exe`; glikvm-mod 0.1.5 applied; Linux fixes (hookWindowMessage, instance conflict), mac-bundle About variant, STRIP hotfix; tar.gz + AppImage packaging; mock device + CDP test helpers.
+**0.1.0** - first release: build/install/run/status/uninstall/package from the 1.5.0 `.dmg` or `.exe`; glikvm-mod 0.1.6 applied; Linux fixes (hookWindowMessage, instance conflict), mac-bundle About variant, STRIP hotfix; tar.gz + AppImage packaging; mock device + CDP test helpers.
 
 ## License
 
