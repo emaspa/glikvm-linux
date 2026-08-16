@@ -174,16 +174,16 @@ function finishPackage(marker, produced) {
 async function release() {
   if (!which("gh")) die("gh (GitHub CLI) is required to publish releases");
   const { marker, produced } = await pkg();
-  const title = `GLKVM ${LINUX_DISPLAY_VERSION}`;
+  const title = `GLKVM ${LINUX_DISPLAY_VERSION} - unofficial`;
   const notes = [
-    `**GLKVM ${marker.appVersion}** desktop client (Linux port ${LINUX_TAG}) + **ui-mod ${marker.modVersion}**, on Electron ${marker.electronVersion}, ${ARCH}.`,
+    `**Unofficial Linux GLKVM desktop client** ${LINUX_TAG}: port of the GLKVM ${marker.appVersion} client (macOS/Windows packages) + **ui-mod ${marker.modVersion}**, on Electron ${marker.electronVersion}, ${ARCH}.`,
     "",
     "**AppImage**: `chmod +x glkvm-mod-*.AppImage && ./glkvm-mod-*.AppImage` (needs FUSE 2, e.g. `libfuse2`; or run with `--appimage-extract-and-run`).",
     "**tar.gz**: extract anywhere and run `glkvm-mod/glkvm-mod.sh`.",
     "",
     "Installed copies check this page on start and every 6 h and offer to update in place (About → Check for updates); downloads are verified against `SHA256SUMS`.",
     "",
-    "Login/settings live in `~/.config/gl-kvm`. Not affiliated with GL-iNet.",
+    "Login/settings live in `~/.config/gl-kvm`. Unofficial community project - not affiliated with, endorsed or supported by GL-iNet.",
     opt("notes", "") ? "\n" + opt("notes", "") : "",
   ].join("\n");
   const notesFile = path.join(DIST, "RELEASE_NOTES.md");
