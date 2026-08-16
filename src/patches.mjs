@@ -155,7 +155,7 @@ export function linuxPatches(dir, { MOD_VERSION }) {
             "          ]),",
             '          createBaseVNode("div", { class: "mt-[10px] flex-start", style: { flexWrap: "wrap", columnGap: "6px", rowGap: "2px" } }, [',
             '            createVNode(_component_BaseText, { type: "footnote-m", variant: "level2" }, {',
-            `              default: withCtx(() => [createTextVNode("Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows \u00b7")]),`,
+            `              default: withCtx(() => [createTextVNode("Linux port of the GLKVM " + unref(VERSION) + " desktop client for macOS/Windows + ui-mod ${MOD_VERSION} \u00b7")]),`,
             "              _: 1",
             "            }),",
             `            createVNode(_component_BaseText, { class: "text-primary pointer", variant: "level2", onClick: () => window.open("${LINUX_REPO_URL}") }, {`,
