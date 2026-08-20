@@ -92,6 +92,9 @@ export async function buildApp({ here, buildDir, src, modDir, electronOverride, 
     modVersion = mod.MOD_VERSION;
     modRev = modCommit(dir);
     log(`glikvm-mod ${modVersion}${modRev ? ` (${modRev})` : ""} from ${dir}`);
+    const supported = mod.SUPPORTED_APP_VERSIONS;
+    if (Array.isArray(supported) && !supported.includes(pkg.version))
+      warn(`glikvm-mod ${modVersion} lists GLKVM ${supported.join(", ")} as supported, this package is ${pkg.version} - continuing (every patch is anchored and aborts loudly if the code moved); if it fails, update the mod ('node glikvm-linux.mjs update-mod') or use a matching package`);
     for (const f of applyPatches(appDir, mod.allPatches(appDir), { variants: modPatchVariants(mod) })) patchedFiles.add(f);
     for (const f of applyPatches(appDir, linuxPatches(appDir, { MOD_VERSION: modVersion }))) patchedFiles.add(f);
   } else {
