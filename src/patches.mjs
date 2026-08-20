@@ -9,8 +9,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const LINUX_VERSION = "0.1.1";
-export const LINUX_STAGE = "beta"; // shown as "v0.1.0 linux (beta)"
+export const LINUX_VERSION = "0.1.2";
+export const LINUX_STAGE = "beta"; // shown as "v0.1.2 linux (beta)"
 export const LINUX_TAG = `v${LINUX_VERSION}${LINUX_STAGE ? `-${LINUX_STAGE}` : ""}`; // git tag / GitHub release name, what the in-app updater compares
 export const LINUX_REPO = "emaspa/glikvm-linux";
 export const LINUX_DISPLAY_VERSION = `v${LINUX_VERSION} linux${LINUX_STAGE ? ` (${LINUX_STAGE})` : ""}`;

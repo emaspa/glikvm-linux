@@ -60,7 +60,7 @@ export function resolveSource(src, workDir) {
   if (!src) {
     // default: first .dmg / .exe next to us
     const here = process.cwd();
-    const cand = fs.readdirSync(here).filter((f) => /\.(dmg|exe)$/i.test(f)).sort();
+    const cand = fs.readdirSync(here).filter((f) => /\.(dmg|exe)$/i.test(f)).sort().reverse(); // newest version first
     if (!cand.length) die("no --src given and no .dmg/.exe found in the current directory");
     src = path.join(here, cand[0]);
     log(`using ${src}`);

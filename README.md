@@ -2,7 +2,7 @@
 
 Unofficial Linux GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
 
-This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.1 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.0 release1 today).
+This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.2 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.1 release1 today).
 
 > **Not affiliated with GL-iNet.** This is a community port of their client; GLKVM, the client and its artwork are theirs, and this project is not endorsed or supported by them. The source repository contains only the build tool and patches; the release downloads are convenience builds of their client for Linux.
 
@@ -16,6 +16,7 @@ It has everything the mod adds on Windows:
 | **Paste local clipboard into the remote machine** | `Ctrl+Alt+V` (configurable), or right-click a tab; optional *Slow* paste |
 | **1:1 resize to KVM resolution** | button next to fullscreen in the session toolbar, tab menu, or *Always open sessions at 1:1* |
 | **Start screen** | open on Remote Access or Local Access; Back from Settings returns to the last access page |
+| **Remember session passwords** | opt-in: a *Remember my password* checkbox on the device login screen; stored encrypted by the OS keystore (keyring/libsecret on Linux), auto-filled and submitted next time; turning the setting off wipes them |
 | Window titles = device name, geometry inheritance, settings UI under *Settings → General → Sessions (ui-mod)*, mod/port stamps in About | |
 
 ## Just run it
@@ -38,7 +39,7 @@ The app checks this repo's releases 8 s after start and every 6 h (About → **C
 
 * Linux x64 (arm64 with `--arch arm64`, untested), glibc-based distro able to run Electron 34 (Ubuntu 22.04+ / Fedora / Arch / ...).
 * [Node.js](https://nodejs.org) **24** (≥ 23.6; it loads glikvm-mod's TypeScript patch definitions with Node's built-in type stripping - no bun, no tsc), `git`, and `7z` (`p7zip-full` / `7zip` package) to open the `.dmg`/`.exe`.
-* **The official GLKVM package** for macOS (`gl-kvm-<version>.dmg`) or Windows (`GLKVM-Setup-<version>.exe`) from the [GL-iNet app page](https://www.gl-inet.com/en-de/pages/app-rm), placed in this directory (or given with `--src`). Tested with **1.5.0 release1** (Electron 34.5.8).
+* **The official GLKVM package** for macOS (`gl-kvm-<version>.dmg`) or Windows (`GLKVM-Setup-<version>.exe`) from the [GL-iNet app page](https://www.gl-inet.com/en-de/pages/app-rm), placed in this directory (or given with `--src`). Tested with **1.5.1 release1** and 1.5.0 release1 (both Electron 34.5.8).
 * No root: everything goes to `~/.local/share/glkvm-mod` and your app menu.
 
 ### Install from source
@@ -47,7 +48,7 @@ The app checks this repo's releases 8 s after start and every 6 h (About → **C
 git clone https://github.com/emaspa/glikvm-linux.git
 cd glikvm-linux
 npm install
-# put gl-kvm-1.5.0-release1.dmg (or the Windows .exe) in this directory, then:
+# put gl-kvm-1.5.1-release1.dmg (or the Windows .exe) in this directory, then:
 node glikvm-linux.mjs install        # extract + patch + fetch Electron + install + "GLKVM (mod)" menu entry
 node glikvm-linux.mjs run            # or launch "GLKVM (mod)" from your app menu, or ~/.local/bin/glkvm-mod
 node glikvm-linux.mjs status
@@ -98,7 +99,7 @@ Nothing else in the client is touched: login, cloud relay, local access, webterm
 * **GL-iNet's own auto-update** is inert on Linux (their feed has no Linux entry); updates come from this repo's releases via the in-app updater described above.
 * **Notifications** (paste failures etc.) use libnotify via Electron; `Ctrl+Alt+V` is intercepted before the device iframe sees it, as on Windows.
 * Fonts: the bundle ships Inter/NotoSansSC, so it looks the same as elsewhere; on HiDPI the usual Electron `--force-device-scale-factor` works if your session doesn't set it.
-* Tested on Ubuntu (GNOME, Wayland session/XWayland) with the mock device below and against the client 1.5.0 `.dmg`; real RM10 units are reachable exactly like on Windows since the session is the device's own web UI in an iframe.
+* Tested on Ubuntu (GNOME, Wayland session/XWayland) with the mock device below and against the client 1.5.1 `.dmg`; real RM10 units are reachable exactly like on Windows since the session is the device's own web UI in an iframe.
 
 ## Testing without a KVM
 
@@ -120,6 +121,8 @@ grep PRINT test/mock-8443.log
 This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendor/` on first use (or use `--mod` to point at your checkout) and imports its `src/patches.ts` directly. Anything platform-neutral belongs upstream in the mod; only Linux plumbing and build-variant workarounds live here.
 
 ## Changelog
+
+**0.1.2 beta** - GLKVM 1.5.1 + ui-mod 0.1.7: remember session passwords (checkbox on the device login screen, encrypted via the OS keystore, auto-login next time - verified on Linux/keyring); the default `--src` now picks the newest package in the directory; mock device grew a login page for testing the flow.
 
 **0.1.1 beta** - wording: "Unofficial" in the About page and the footer (`unofficial v0.1.1 linux (beta)`), About lists both repos and has *Check for updates*; first release published through the in-app updater path.
 

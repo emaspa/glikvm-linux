@@ -33,6 +33,14 @@ video{display:block}
 .gl-icon{width:1em;height:1em;fill:currentColor}
 </style></head><body>
 <svg style="display:none"><symbol id="gl-kvm-fullscreen" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol></svg>
+<div id="login" style="position:fixed;inset:0;background:#0d1117;display:none;align-items:center;justify-content:center;z-index:9">
+<form id="f" style="display:flex;flex-direction:column;gap:12px;width:300px;background:#161b22;border:1px solid #2a2f36;border-radius:10px;padding:28px">
+<div style="font-size:18px;font-weight:600;text-align:center;margin-bottom:6px">${name}</div>
+<input type="text" autocomplete="username" placeholder="Username" value="admin" style="padding:9px 10px;background:#0d1117;border:1px solid #2a2f36;border-radius:6px;color:#ddd">
+<input type="password" autocomplete="current-password" placeholder="Password" style="padding:9px 10px;background:#0d1117;border:1px solid #2a2f36;border-radius:6px;color:#ddd">
+<button type="button" class="ant-btn-primary" style="padding:9px;background:#3b82f6;border:none;border-radius:6px;color:#fff;font-weight:600;cursor:pointer">Log in</button>
+<div id="err" style="color:#f66;min-height:18px;text-align:center"></div></form>
+</div>
 <div id="header"><b>${name}</b><span id="status">device UI</span>
  <div class="action-wrap"><div class="action-item" id="fs" title="Fullscreen"><span><svg class="gl-icon"><use xlink:href="#gl-kvm-fullscreen"></use></svg></span></div></div>
  <div class="action-item" title="webterm" onclick="parent.postMessage(JSON.stringify({action:'open_webterm',deviceKey:window.__dk}),'*')">T</div>
@@ -40,6 +48,18 @@ video{display:block}
 <div id="stage"><video id="v" autoplay muted playsinline></video></div>
 <div id="footer">typed: <span id="typed"></span></div>
 <script>
+// login gate, SPA-style like the real device UI: the form disappears in place, no page reload
+const authed = /glmock_auth=1/.test(document.cookie);
+if (!authed) document.getElementById("login").style.display = "flex";
+// JS-driven like the real device UI (the client's iframe sandbox blocks native form submission)
+const doLogin = async () => {
+  const pw = document.querySelector('input[type=password]').value;
+  const r = await fetch("/api/login", { method: "POST", body: pw });
+  if (r.ok) document.getElementById("login").remove();
+  else document.getElementById("err").textContent = "Wrong password";
+};
+document.querySelector("#f button").addEventListener("click", doLogin);
+document.getElementById("f").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
 const c = document.createElement("canvas"); c.width = ${vw}; c.height = ${vh};
 const g = c.getContext("2d");
 let n = 0;
@@ -57,11 +77,24 @@ window.addEventListener("message", (e) => {
 });
 setInterval(() => fetch("/api/hid/typed").then(r => r.text()).then(t => document.getElementById("typed").textContent = t.slice(-60)), 1000);
 </script></body></html>`;
+const PASSWORD = "kvm123"; // what the login form accepts; the mod's remember-password flow is tested against it
 let typed = "";
 https
   .createServer(opts, (req, res) => {
     const url = new URL(req.url, "https://x");
     log(`${req.method} ${req.url} ua=...${(req.headers["user-agent"] || "").slice(-30)} cookie=${req.headers.cookie || "-"}`);
+    if (url.pathname === "/api/login") {
+      let body = "";
+      req.on("data", (c) => (body += c));
+      req.on("end", () => {
+        const ok = body === PASSWORD;
+        log(`LOGIN ${ok ? "ok" : "wrong"} pw=${JSON.stringify(body)}`);
+        res.statusCode = ok ? 200 : 403;
+        if (ok) res.setHeader("set-cookie", "glmock_auth=1; Path=/");
+        res.end(ok ? "ok" : "no");
+      });
+      return;
+    }
     if (url.pathname === "/api/auth/check") {
       res.setHeader("content-type", "application/json");
       return res.end(JSON.stringify({ ok: true, result: { user: null } }));
