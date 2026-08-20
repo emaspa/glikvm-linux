@@ -83,7 +83,7 @@ GLKVM is a thin Electron 34 wrapper (unminified `app.asar`, `nodeIntegration: tr
    * single-instance conflict: on Linux there is no stock client to take over from, so a second start just raises the running one (the mod's PowerShell-based takeover dialog is skipped);
    * a variant of the mod's About-page patch for the macOS-built bundle (its Vue render cache differs from the Windows build in that one spot);
    * hotfix for glikvm-mod ≤ 0.1.5 (`STRIP` undefined in `glOnTabDragEnd`, which made tearing a tab out by drag throw) - fixed upstream in 0.1.6; the hotfix is applied only while its anchor exists, so it is a no-op with a current mod;
-   * version shown as `unofficial v0.1.1 linux (beta)` in the footer and `GLKVM v0.1.1 linux (beta)` as the About title, and the About page replaced by: which GLKVM release it is ported from + ui-mod version, links to this repo and glikvm-mod, and the non-affiliation note - display only, the update-check copy is untouched.
+   * version shown as `unofficial v<version> linux (beta)` in the footer and `GLKVM v<version> linux (beta)` as the About title, and the About page replaced by: which GLKVM release it is ported from + ui-mod version, links to this repo and glikvm-mod, *Check for updates*, and the non-affiliation note - display only, the update-check copy is untouched.
    * the in-app updater (`src/inject/linux-updater.js`, main process) + `window.utils.glLinuxCheckUpdate()` + the About link.
    Every patched file is syntax-checked.
 3. **Fetch Electron** (`@electron/get`, cached) and assemble a self-contained dir: Electron dist with the binary renamed `glkvm-mod`, `resources/app` = the patched app, and `glkvm-mod.sh` which runs it with `--no-sandbox` (the stock client itself passes `no-sandbox`; the unpacked `chrome-sandbox` cannot be setuid without root anyway).
@@ -103,7 +103,7 @@ Nothing else in the client is touched: login, cloud relay, local access, webterm
 
 ## Testing without a KVM
 
-`test/mockkvm.mjs` is a fake device (self-signed HTTPS, `/api/auth/check`, a page with a live `<video>` of a chosen resolution, the client handshake, and `/api/hid/print` that records what gets "typed"), and `test/cdp.mjs` drives the running client over the DevTools protocol (screenshots, `window.utils.glFitWindow()`, `glPasteClipboard()`, `glMoveDevice(id, "window"|"tab")`, ...):
+`test/mockkvm.mjs` is a fake device: self-signed HTTPS, `/api/auth/check`, a JS-driven login page (password `kvm123` - exercises the remember-password flow; the client's iframe sandbox blocks native form submission, so it is button-driven like the real device UI), a page with a live `<video>` of a chosen resolution, the client handshake, and `/api/hid/print` recording what gets "typed". `test/cdp.mjs` drives the running client over the DevTools protocol (screenshots, `window.utils.glFitWindow()`, `glPasteClipboard()`, `glMoveDevice(id, "window"|"tab")`, ...):
 
 ```sh
 openssl req -x509 -newkey rsa:2048 -nodes -keyout test/key.pem -out test/cert.pem -subj /CN=localhost -days 30
@@ -122,7 +122,7 @@ This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendo
 
 ## Changelog
 
-**0.1.2 beta** - GLKVM 1.5.1 + ui-mod 0.1.7: remember session passwords (checkbox on the device login screen, encrypted via the OS keystore, auto-login next time - verified on Linux/keyring); the default `--src` now picks the newest package in the directory; mock device grew a login page for testing the flow.
+**0.1.2 beta** - GLKVM 1.5.1 + ui-mod 0.1.7: remember session passwords (checkbox on the device login screen, encrypted via the OS keystore, auto-login next time - verified end-to-end on Linux against the GNOME keyring, including an upstream fix so the checkbox is read at submit time); the default `--src` now picks the newest package in the directory; mock device grew a login page for testing the flow.
 
 **0.1.1 beta** - wording: "Unofficial" in the About page and the footer (`unofficial v0.1.1 linux (beta)`), About lists both repos and has *Check for updates*; first release published through the in-app updater path.
 
