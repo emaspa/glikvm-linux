@@ -2,7 +2,7 @@
 
 Unofficial Linux GLKVM desktop client (GL-iNet Comet / RM1 / RM10) based on the macOS and Windows packages, with [glikvm-mod](https://github.com/emaspa/glikvm-mod) applied.
 
-This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.2 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.1 release1 today).
+This project is a port of the platform-independent app payload from the official `.dmg` / `.exe`, on the Linux Electron runtime, with the mod applied, shipped as an AppImage / tarball you can just run (with in-app updates) or built locally from your own downloaded package. It shows up as **v0.1.3 linux (beta)**; About shows the ui-mod version and which GLKVM release it is ported from (1.5.1 release2 today).
 
 > **Not affiliated with GL-iNet.** This is a community port of their client; GLKVM, the client and its artwork are theirs, and this project is not endorsed or supported by them. The source repository contains only the build tool and patches; the release downloads are convenience builds of their client for Linux.
 
@@ -39,7 +39,7 @@ The app checks this repo's releases 8 s after start and every 6 h (About → **C
 
 * Linux x64 (arm64 with `--arch arm64`, untested), glibc-based distro able to run Electron 34 (Ubuntu 22.04+ / Fedora / Arch / ...).
 * [Node.js](https://nodejs.org) **24** (≥ 23.6; it loads glikvm-mod's TypeScript patch definitions with Node's built-in type stripping - no bun, no tsc), `git`, and `7z` (`p7zip-full` / `7zip` package) to open the `.dmg`/`.exe`.
-* **The official GLKVM package** for macOS (`gl-kvm-<version>.dmg`) or Windows (`GLKVM-Setup-<version>.exe`) from the [GL-iNet app page](https://www.gl-inet.com/en-de/pages/app-rm), placed in this directory (or given with `--src`). Tested with **1.5.1 release1** and 1.5.0 release1 (both Electron 34.5.8).
+* **The official GLKVM package** for macOS (`gl-kvm-<version>.dmg`) or Windows (`GLKVM-Setup-<version>.exe`) from the [GL-iNet app page](https://www.gl-inet.com/en-de/pages/app-rm), placed in this directory (or given with `--src`). Tested with **1.5.1 release2** (built from the Windows `.exe` - GL-iNet ships some releases for Windows first), 1.5.1 release1 and 1.5.0 release1 (all Electron 34.5.8).
 * No root: everything goes to `~/.local/share/glkvm-mod` and your app menu.
 
 ### Install from source
@@ -48,7 +48,7 @@ The app checks this repo's releases 8 s after start and every 6 h (About → **C
 git clone https://github.com/emaspa/glikvm-linux.git
 cd glikvm-linux
 npm install
-# put gl-kvm-1.5.1-release1.dmg (or the Windows .exe) in this directory, then:
+# put the GLKVM .dmg or Windows -setup.exe in this directory, then:
 node glikvm-linux.mjs install        # extract + patch + fetch Electron + install + "GLKVM (mod)" menu entry
 node glikvm-linux.mjs run            # or launch "GLKVM (mod)" from your app menu, or ~/.local/bin/glkvm-mod
 node glikvm-linux.mjs status
@@ -121,6 +121,8 @@ grep PRINT test/mock-8443.log
 This repo contains no copy of the mod: it clones `emaspa/glikvm-mod` into `vendor/` on first use (or use `--mod` to point at your checkout) and imports its `src/patches.ts` directly. Anything platform-neutral belongs upstream in the mod; only Linux plumbing and build-variant workarounds live here.
 
 ## Changelog
+
+**0.1.3 beta** - GLKVM 1.5.1 release2 (built from the Windows installer, exercising the `.exe` source path) + ui-mod 0.1.10 (remembered-password capture rework: read at submit time, stored password now overwritten when you log in with a new one); save + auto-login re-verified on Linux.
 
 **0.1.2 beta** - GLKVM 1.5.1 + ui-mod 0.1.7: remember session passwords (checkbox on the device login screen, encrypted via the OS keystore, auto-login next time - verified end-to-end on Linux against the GNOME keyring, including an upstream fix so the checkbox is read at submit time); the default `--src` now picks the newest package in the directory; mock device grew a login page for testing the flow.
 
